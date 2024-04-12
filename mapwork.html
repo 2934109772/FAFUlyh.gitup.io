@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGIS Application with ArcGIS API for JavaScript</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.29/"></script>
+    <style>
+        html, body, #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+        #header {
+            background: #404040;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+        #mapDiv {
+            height: calc(100% - 50px);
+            width: calc(100% - 200px);
+            position: absolute;
+            left: 200px; /* Width of the basemap gallery */
+            top: 50px; /* Height of the header */
+        }
+        #basemapGalleryDiv {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            width: 200px;
+            height: calc(100% - 50px);
+            background: white;
+            overflow-y: auto; /* Enable vertical scrolling */
+            padding: 5px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+        }
+        .title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px 4px; /* Slightly larger margin for the title */
+            padding: 2px;
+            text-align: center;
+        }
+        #addBookmarkBtn {
+            display: block;
+            width: 95%;
+            margin: 10px auto;
+            padding: 10px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #0079c1;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">全国范围2019年学校位置与POI数据</div>
+    <div id="basemapGalleryDiv">
+        <div class="title">底图库</div> <!-- Title for the basemap gallery -->
+        <div id="galleryContainer"></div> <!-- Container for basemap gallery items -->
+    </div>
+    <div id="viewDiv">
+        <div id="mapDiv"></div>
+        <button id="addBookmarkBtn">添加书签</button>
+    </div>
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/layers/FeatureLayer",
+            "esri/widgets/BasemapGallery",
+            "esri/widgets/CoordinateConversion",
+            "esri/widgets/Bookmarks",
+            "esri/widgets/ScaleBar",
+            "esri/widgets/Legend",
+            "esri/widgets/Search",
+            "esri/widgets/LayerList",
+            "esri/core/Collection"
+        ], function(Map, MapView, FeatureLayer, BasemapGallery, CoordinateConversion, Bookmarks, ScaleBar, Legend, Search, LayerList, Collection) {
+            var map = new Map({
+                basemap: "streets-navigation-vector"
+            });
+
+            var view = new MapView({
+                container: "mapDiv",
+                map: map,
+                zoom: 4,
+                center: [115, 35]
+            });
+
+            var FeatureLayer = new FeatureLayer({
+                url: "https://www.geosceneonline.cn/server/rest/services/Hosted/全国范围2019年学校POI数据/FeatureServer"
+            });
+
+            map.add(FeatureLayer);
+
+            var basemapGallery = new BasemapGallery({
+                view: view,
+                container: "galleryContainer"
+            });
+
+            var coordinateConversion = new CoordinateConversion({
+                view: view
+            });
+            view.ui.add(coordinateConversion, "top-right");
+
+            var bookmarks = new Bookmarks({
+                view: view,
+                bookmarks: new Collection(),
+                editingEnabled: true
+            });
+            view.ui.add(bookmarks, "top-right");
+
+            var scaleBar = new ScaleBar({
+                view: view
+            });
+            view.ui.add(scaleBar, "top-right");
+
+            var legend = new Legend({
+                view: view
+            });
+            view.ui.add(legend, "bottom-right");
+
+            var searchWidget = new Search({
+                view: view
+            });
+            view.ui.add(searchWidget, "top-right");
+
+            var layerList = new LayerList({
+                view: view
+            });
+            view.ui.add(layerList, "bottom-left");
+
+            document.getElementById('addBookmarkBtn').onclick = function() {
+                var bookmark = {
+                    name: "Bookmark " + (bookmarks.bookmarks.length + 1),
+                    extent: view.extent
+                };
+                bookmarks.bookmarks.add(bookmark);
+            };
+        });
+    </script>
+</body>
+</html>
